@@ -11,4 +11,9 @@ class AccountRepository
     {
         $this->accounts = [];
     }
+
+    public function getBalance(string $accountId): ?int
+    {
+        return $this->accounts[$accountId]['balance'] ?? null;
+    }
 }

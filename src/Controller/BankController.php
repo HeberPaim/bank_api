@@ -4,6 +4,7 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
 
 use App\Service\BankService;
 
@@ -33,4 +34,31 @@ class BankController extends AbstractController
         // send the response with appropriate headers
         return $response;
     }
+
+    //set the route, so [site URL]/hello will trigger this
+    #[Route('/balance', methods:['GET'], name: 'balance')]
+    public function balance(Request $request): Response
+    {
+        //create a new Response object
+        $response = new Response();
+
+
+        //reset the bankService
+        $balance = $this->bankService->getBalance($request->get("account_id"));
+        if($balance === null){
+            $response->setStatusCode(Response::HTTP_NOT_FOUND);
+        } else{
+            //make sure we send a 200 OK status
+            $response->setContent($balance);        // set the response content type to plain text
+            $response->headers->set('Content-Type', 'text/html');
+            $response->setStatusCode(Response::HTTP_OK);
+        }
+        
+
+
+        // send the response with appropriate headers
+        return $response;
+    }
+
+
 }

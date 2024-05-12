@@ -18,4 +18,9 @@ class BankService
     {
         $this->accountRepository->reset();
     }
+
+    public function getBalance(string $accountId): ?int
+    {
+        return $this->accountRepository->getBalance($accountId);
+    }
 }

@@ -14,18 +14,21 @@ class BankService
         $this->accountRepository = $accountRepository;
     }
 
-    public function reset(): void
-    {
+    public function reset(): void {
         $this->accountRepository->reset();
     }
 
-    public function getBalance(string $accountId): ?float
-    {
+    public function getBalance(string $accountId): ?float {
         return $this->accountRepository->getBalance($accountId);
     }
-
-    public function deposit(int $destination, float $amount): array{
+    public function checkAccount(string $accountId): bool {
+        return $this->accountRepository->checkAccount($accountId);
+    }
+    public function deposit(string $destination, float $amount): array {
         return $this->accountRepository->deposit($destination, $amount);
+    }
+    public function withdraw(string $origin, float $amount): array {
+        return $this->accountRepository->withdraw($origin, $amount);
     }
 }
 ?>

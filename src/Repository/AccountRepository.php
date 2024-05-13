@@ -17,14 +17,24 @@ class AccountRepository
         return $this->accounts[$accountId]['balance'] ?? null;
     }
 
-    public function deposit(int $accountId, float $amount): array{
+    public function checkAccount(string $accountId): bool{
+        return isset($this->accounts[$accountId]);
+    }
+    
+    public function deposit(string $accountId, float $amount): array{
 
-        if(isset($this->accounts[$accountId])){
+        if($this->checkAccount($accountId)){
             $this->accounts[$accountId]['balance'] += $amount;
         }else {
             $this->accounts[$accountId]['balance'] = 0;
             $this->accounts[$accountId]['balance'] += $amount;
         }
-        return(array("destination"=> array("id"=> $accountId, "balance" => $this->accounts[$accountId]['balance'])));
+        return(array("destination"=> array("id"=> (string)$accountId, "balance" => (float)$this->accounts[$accountId]['balance'])));
+    }
+
+    public function withdraw(string $accountId, string $amount){
+
+        $this->accounts[$accountId]['balance'] -= $amount;
+        return(array("origin"=> array("id"=> (string)$accountId, "balance" => (float)$this->accounts[$accountId]['balance'])));
     }
 }

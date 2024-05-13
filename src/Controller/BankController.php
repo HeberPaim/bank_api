@@ -62,7 +62,7 @@ class BankController extends AbstractController
             case 'deposit':
                 if(is_numeric($request['destination']) && $request['destination'] > 0){
                     $response->headers->set('Content-Type', 'application/json');
-                    $response->setContent(json_encode($this->bankService->deposit((int)$request['destination'], (float)$request['amount'])));
+                    $response->setContent(json_encode($this->bankService->deposit($request['destination'], (float)$request['amount'])));
                     $response->setStatusCode(Response::HTTP_CREATED);
                 } else{
                     $response->headers->set('Content-Type', 'text/html');
@@ -71,6 +71,15 @@ class BankController extends AbstractController
                 }
                 break;
             case 'withdraw':
+                if($this->bankService->checkAccount($request['origin'])){
+                    $response->setContent(json_encode($this->bankService->withdraw($request['origin'], (float)$request['amount'])));
+                    $response->headers->set('Content-Type', 'application/json');
+                    $response->setStatusCode(Response::HTTP_CREATED);
+                } else{
+                    $response->setContent(0);
+                    $response->setStatusCode(Response::HTTP_NOT_FOUND);
+                }
+
                 break;
             case 'transfer':
                 break;
@@ -96,15 +105,14 @@ class BankController extends AbstractController
         if($session->get('bankService') !== null)
             $this->setBankService($session->get('bankService'));
 
-        //reset the bankService
-        $balance = $this->bankService->getBalance($request->get("account_id"));
+        $accountId = $request->get("account_id");
 
-        if($balance === null){
+        if($this->bankService->checkAccount($accountId)){
+            $response->setContent($this->bankService->getBalance($accountId));
+            $response->setStatusCode(Response::HTTP_OK);
+        } else{
             $response->setContent(0);
             $response->setStatusCode(Response::HTTP_NOT_FOUND);
-        } else{
-            $response->setContent($balance);
-            $response->setStatusCode(Response::HTTP_OK);
         }
 
         $response->headers->set('Content-Type', 'text/html');

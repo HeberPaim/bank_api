@@ -29,7 +29,7 @@ class BankService
         return $this->accountRepository->checkAccount($accountId);
     }
 
-    public function deposit(string $destination, float $amount): array {
+    public function deposit($destination, float $amount): array {
         return $this->accountRepository->deposit($destination, $amount);
     }
 

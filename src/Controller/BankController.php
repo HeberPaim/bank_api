@@ -27,11 +27,11 @@ class BankController extends AbstractController
     {
         $response = new Response();
 
-        $session = $request->getSession();
-        
-        //read bankService from session, if it exists
-        if($session->get('bankService') != null)
-            $this->setBankService($session->get('bankService'));
+        //read bankService from file, if it exists
+        try{
+            $this->setBankService(unserialize(file_get_contents('bankService')));
+        }   catch(\Exception $e){
+        }
 
         //reset all accounts on bankService
         $this->bankService->reset();
@@ -41,7 +41,7 @@ class BankController extends AbstractController
 
         $response->headers->set('Content-Type', 'application/json');
         
-        $session->set('bankService', $this->bankService); 
+        file_put_contents('bankService', serialize($this->bankService));
         return $response;
     }
 
@@ -50,25 +50,18 @@ class BankController extends AbstractController
     public function event(Request $request): Response
     {
         $response = new Response();
-        $session = $request->getSession();
-
-        //read bankService from session, if it exists
-        if($session->get('bankService') !== null)
-            $this->setBankService($session->get('bankService'));
+         //read bankService from file, if it exists
+        try{
+            $this->setBankService(unserialize(file_get_contents('bankService')));
+        }   catch(\Exception $e){
+        }
 
         $request = json_decode($request->getContent(), true);
-
         switch($request['type']){
             case 'deposit':
-                if(is_numeric($request['destination']) && $request['destination'] > 0){
                     $response->headers->set('Content-Type', 'application/json');
                     $response->setContent(json_encode($this->bankService->deposit($request['destination'], (float)$request['amount'])));
                     $response->setStatusCode(Response::HTTP_CREATED);
-                } else{
-                    $response->headers->set('Content-Type', 'text/html');
-                    $response->setContent('Invalid destination');
-                    $response->setStatusCode(Response::HTTP_BAD_REQUEST);
-                }
                 break;
             case 'withdraw':
                 if($this->bankService->checkAccount($request['origin'])){
@@ -81,7 +74,7 @@ class BankController extends AbstractController
                 }
                 break;
             case 'transfer':
-                if($this->bankService->checkAccount($request['origin']) && $this->bankService->checkAccount($request['destination'])){
+                if($this->bankService->checkAccount($request['origin'])){
                     $response->setContent(json_encode($this->bankService->transfer($request['origin'], $request['destination'], (float)$request['amount'])));
                     $response->headers->set('Content-Type', 'application/json');
                     $response->setStatusCode(Response::HTTP_CREATED);
@@ -96,7 +89,7 @@ class BankController extends AbstractController
                 break;
         };
 
-        $session->set('bankService', $this->bankService); 
+        file_put_contents('bankService', serialize($this->bankService));
         return $response;
     }
 
@@ -107,10 +100,11 @@ class BankController extends AbstractController
         //create a new Response object
         $response = new Response();
 
-        //read bankService from session, if it exists
-        $session = $request->getSession();
-        if($session->get('bankService') !== null)
-            $this->setBankService($session->get('bankService'));
+        //read bankService from file, if it exists
+        try{
+            $this->setBankService(unserialize(file_get_contents('bankService')));
+        }   catch(\Exception $e){
+        }
 
         $accountId = $request->get("account_id");
 
@@ -132,11 +126,8 @@ class BankController extends AbstractController
         //create a new Response object
         $response = new Response();
 
-        //read bankService from session, if it exists
-        $session = $request->getSession();
-
-        if($session->get('bankService') !== null)
-            $this->setBankService($session->get('bankService'));
+        //read bankService from file, if it exists
+        $this->setBankService(unserialize(file_get_contents('bankService')));
 
         $response->setContent(json_encode($this->bankService->getAllAccounts(), true));
         $response->headers->set('Content-Type', 'application/json');

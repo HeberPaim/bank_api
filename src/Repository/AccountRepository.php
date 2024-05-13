@@ -12,9 +12,12 @@ class AccountRepository
         $this->accounts = [];
     }
 
-    public function getBalance(string $accountId): ?float
-    {
+    public function getBalance(string $accountId): ?float {
         return $this->accounts[$accountId]['balance'] ?? null;
+    }
+
+    public function getAllAccounts() {
+        return $this->accounts ?? null;
     }
 
     public function checkAccount(string $accountId): bool{
@@ -22,7 +25,6 @@ class AccountRepository
     }
     
     public function deposit(string $accountId, float $amount): array{
-
         if($this->checkAccount($accountId)){
             $this->accounts[$accountId]['balance'] += $amount;
         }else {
@@ -33,8 +35,20 @@ class AccountRepository
     }
 
     public function withdraw(string $accountId, string $amount){
-
         $this->accounts[$accountId]['balance'] -= $amount;
         return(array("origin"=> array("id"=> (string)$accountId, "balance" => (float)$this->accounts[$accountId]['balance'])));
     }
+    
+    public function transfer (string $origin, string $destination, float $amount){
+
+        $this->accounts[$origin]['balance'] -= $amount;
+        $this->accounts[$destination]['balance'] += $amount;
+
+        return(array("origin"       => array("id"      => (string)$origin, 
+                                             "balance" => (float)$this->accounts[$origin]['balance']),
+                     "destination"  => array("id"      => (string)$destination, 
+                                             "balance" => (float)$this->accounts[$destination]['balance'])));
+    }
+
+
 }

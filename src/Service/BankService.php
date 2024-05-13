@@ -9,8 +9,7 @@ class BankService
 {
     private AccountRepository $accountRepository;
 
-    public function __construct(AccountRepository $accountRepository)
-    {
+    public function __construct(AccountRepository $accountRepository) {
         $this->accountRepository = $accountRepository;
     }
 
@@ -21,14 +20,25 @@ class BankService
     public function getBalance(string $accountId): ?float {
         return $this->accountRepository->getBalance($accountId);
     }
+
+    public function getAllAccounts() {
+        return $this->accountRepository->getAllAccounts();
+    }
+
     public function checkAccount(string $accountId): bool {
         return $this->accountRepository->checkAccount($accountId);
     }
+
     public function deposit(string $destination, float $amount): array {
         return $this->accountRepository->deposit($destination, $amount);
     }
+
     public function withdraw(string $origin, float $amount): array {
         return $this->accountRepository->withdraw($origin, $amount);
+    }
+
+    public function transfer(string $origin, string $destination, float $amount): array {
+        return $this->accountRepository->transfer($origin, $destination, $amount);
     }
 }
 ?>

@@ -79,12 +79,19 @@ class BankController extends AbstractController
                     $response->setContent(0);
                     $response->setStatusCode(Response::HTTP_NOT_FOUND);
                 }
-
                 break;
             case 'transfer':
+                if($this->bankService->checkAccount($request['origin']) && $this->bankService->checkAccount($request['destination'])){
+                    $response->setContent(json_encode($this->bankService->transfer($request['origin'], $request['destination'], (float)$request['amount'])));
+                    $response->headers->set('Content-Type', 'application/json');
+                    $response->setStatusCode(Response::HTTP_CREATED);
+                } else {
+                    $response->setContent(0);
+                    $response->setStatusCode(Response::HTTP_NOT_FOUND);
+                }
                 break;
             default:
-                var_dump('ou aqui?');
+                $response->setContent(0);
                 $response->setStatusCode(Response::HTTP_NOT_FOUND);
                 break;
         };
@@ -116,6 +123,25 @@ class BankController extends AbstractController
         }
 
         $response->headers->set('Content-Type', 'text/html');
+        return $response;
+    }
+    //allaccounts route
+    #[Route('/allaccounts', methods:['GET'], name: 'allaccounts')]
+    public function allaccounts(Request $request): Response
+    {
+        //create a new Response object
+        $response = new Response();
+
+        //read bankService from session, if it exists
+        $session = $request->getSession();
+
+        if($session->get('bankService') !== null)
+            $this->setBankService($session->get('bankService'));
+
+        $response->setContent(json_encode($this->bankService->getAllAccounts(), true));
+        $response->headers->set('Content-Type', 'application/json');
+        $response->setStatusCode(Response::HTTP_OK);
+
         return $response;
     }
 }

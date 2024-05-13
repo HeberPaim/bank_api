@@ -15,50 +15,87 @@ class BankController extends AbstractController
         $this->bankService = $bankService;
     }
 
-    //set the route, so [site URL]/hello will trigger this
+    private function setBankService(BankService $bankService){
+        $this->bankService = $bankService;
+    }
+    /*
+        The RESET route clear all current stored accounts on the session.
+    */
+    //RESET route
     #[Route('/reset', methods:['POST'], name: 'reset')]
-    public function reset(): Response
+    public function reset(Request $request): Response
     {
-        //create a new Response object
         $response = new Response();
 
-        //reset the bankService
+        $session = $request->getSession();
+        $this->setBankService($session->get('bankService'));
+
+        //reset all accounts on bankService
         $this->bankService->reset();
 
-        //make sure we send a 200 OK status
+        $response->setContent('OK');
         $response->setStatusCode(Response::HTTP_OK);
 
-        // set the response content type to plain text
         $response->headers->set('Content-Type', 'application/json');
-
-        // send the response with appropriate headers
+        
+        $session->set('bankService', $this->bankService); 
         return $response;
     }
 
-    //set the route, so [site URL]/hello will trigger this
+    // EVENT route
+    #[Route('/event', methods:['POST'], name: 'event')]
+    public function event(Request $request): Response
+    {
+        $response = new Response();
+        $session = $request->getSession();
+        $this->setBankService($session->get('bankService'));
+        $request = json_decode($request->getContent(), true);
+
+        switch($request['type']){
+            case 'deposit':
+                if(is_numeric($request['destination']) && $request['destination'] > 0){
+                    $response->headers->set('Content-Type', 'application/json');
+                    $response->setContent(json_encode($this->bankService->deposit((int)$request['destination'], (float)$request['amount'])));
+                    $response->setStatusCode(Response::HTTP_CREATED);
+                } else{
+                    $response->headers->set('Content-Type', 'text/html');
+                    $response->setContent('Invalid destination');
+                    $response->setStatusCode(Response::HTTP_BAD_REQUEST);
+                }
+                break;
+            case 'withdraw':
+                break;
+            case 'transfer':
+                break;
+            default:
+                var_dump('ou aqui?');
+                $response->setStatusCode(Response::HTTP_NOT_FOUND);
+                break;
+        };
+
+        $session->set('bankService', $this->bankService); 
+        return $response;
+    }
+
+    //BALANCE route
     #[Route('/balance', methods:['GET'], name: 'balance')]
     public function balance(Request $request): Response
     {
         //create a new Response object
         $response = new Response();
 
-
         //reset the bankService
         $balance = $this->bankService->getBalance($request->get("account_id"));
+
         if($balance === null){
+            $response->setContent(0);
             $response->setStatusCode(Response::HTTP_NOT_FOUND);
         } else{
-            //make sure we send a 200 OK status
-            $response->setContent($balance);        // set the response content type to plain text
-            $response->headers->set('Content-Type', 'text/html');
+            $response->setContent($balance);
             $response->setStatusCode(Response::HTTP_OK);
         }
-        
 
-
-        // send the response with appropriate headers
+        $response->headers->set('Content-Type', 'text/html');
         return $response;
     }
-
-
 }

@@ -12,8 +12,19 @@ class AccountRepository
         $this->accounts = [];
     }
 
-    public function getBalance(string $accountId): ?int
+    public function getBalance(string $accountId): ?float
     {
         return $this->accounts[$accountId]['balance'] ?? null;
+    }
+
+    public function deposit(int $accountId, float $amount): array{
+
+        if(isset($this->accounts[$accountId])){
+            $this->accounts[$accountId]['balance'] += $amount;
+        }else {
+            $this->accounts[$accountId]['balance'] = 0;
+            $this->accounts[$accountId]['balance'] += $amount;
+        }
+        return(array("destination"=> array("id"=> $accountId, "balance" => $this->accounts[$accountId]['balance'])));
     }
 }

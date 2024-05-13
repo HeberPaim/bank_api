@@ -28,7 +28,10 @@ class BankController extends AbstractController
         $response = new Response();
 
         $session = $request->getSession();
-        $this->setBankService($session->get('bankService'));
+        
+        //read bankService from session, if it exists
+        if($session->get('bankService') != null)
+            $this->setBankService($session->get('bankService'));
 
         //reset all accounts on bankService
         $this->bankService->reset();
@@ -48,7 +51,11 @@ class BankController extends AbstractController
     {
         $response = new Response();
         $session = $request->getSession();
-        $this->setBankService($session->get('bankService'));
+
+        //read bankService from session, if it exists
+        if($session->get('bankService') !== null)
+            $this->setBankService($session->get('bankService'));
+
         $request = json_decode($request->getContent(), true);
 
         switch($request['type']){
@@ -83,6 +90,11 @@ class BankController extends AbstractController
     {
         //create a new Response object
         $response = new Response();
+
+        //read bankService from session, if it exists
+        $session = $request->getSession();
+        if($session->get('bankService') !== null)
+            $this->setBankService($session->get('bankService'));
 
         //reset the bankService
         $balance = $this->bankService->getBalance($request->get("account_id"));
